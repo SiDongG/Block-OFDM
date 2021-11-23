@@ -1,0 +1,9 @@
+[Bits,Symbols]=Block_init(128);
+Bits
+[H0,H1,h]=Block_Channel();
+Symbols_2=Block_IFFT(Symbols);
+X=Block_CP(H0,H1,Symbols_2,1);
+X_2=Block_Receive(X);
+X_3=Block_FFT(X_2,h);
+Bitsr=Block_Demod(X_3);
+Bitsr

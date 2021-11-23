@@ -1,6 +1,7 @@
-function [Bits,Symbols]=Block_init(L) 
-Bits=randi(0:1,[1,L]);
+function [Bits,Symbols]=Block_init(Block_Num,N) 
+Bits=randi(0:1,[1,Block_Num*N*2]); %L bits in the bit-stream 
 count=1;
+Symbols=zeros(N,1,Block_Num); %Organize symbols into blocks
 while count<length(Bits)
         if (Bits(count)==0 && Bits(count+1)==0)
             Symbols((count+1)/2)=(1+1i)/sqrt(2);
@@ -16,5 +17,4 @@ while count<length(Bits)
         end
         count=count+2;
 end
-
 end

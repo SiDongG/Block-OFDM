@@ -1,4 +1,4 @@
-function [H0,H1]=Block_Channel(L_C,P) %Channel Length of L_C and block size of P
+function [H0,H1]=Block_Channelre(L_C,P)
 h=(1/sqrt(2*(L_C)))*(randn(1,L_C)+1i*randn(1,L_C));
 %Generated Channel impulse response 
 H0=zeros(P); %Preallocating for speed, H0 is the P by P matrix have the (i,j)th entry h(i-j)
@@ -21,4 +21,5 @@ while a<P+1  %generate the channel matrces
     end
     a=a+1;
 end
+
 end
