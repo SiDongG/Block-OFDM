@@ -12,7 +12,7 @@ for a=1:Num
     else
         Insertion2=T*Symbols_2(:,:,a-1);
     end
-    X(:,:,a)=H0*Insertion1+H1*Insertion2+(1/sqrt(2*SNR))*Noise(:,:,a);
+    X(:,:,a)=H0*Insertion1+H1*Insertion2+(1/sqrt(SNR))*Noise(:,:,a);
 end
 
 
