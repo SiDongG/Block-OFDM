@@ -5,15 +5,16 @@ N=16; %Number of Subcarrier
 L=4; %Channel Length
 Block_Num=100; %Block Number
 C=4; %Len Cyclic Prefix 
-M=16; %16-QAM
+M=4; %4-QAM
 P=N+C;
 S=eye(N);
 T=[S(2*N-P+1:N,:);S];
 R=[zeros(N,P-N),eye(N)];
 Pb=1e-3;
-K=-1.5/(log(5*Pb)); %Total fade depth Power Constraint 
-yk=0.5;y0=yk*K;
-Power=10;%Total Power Constraint 
+N_var=1;
+% K=-1.5/(log(5*Pb)); %Total fade depth Power Constraint 
+% yk=0.5;y0=yk*K;
+Power=100;%Average Power Constraint 
 
 IFFT=zeros(N);
 for a=1:N
@@ -46,25 +47,53 @@ while a<P+1  %generate the channel matrces
     a=a+1;
 end
 D=FFT*R*H0*T*IFFT;
-%% Subcarrier Classification
+%% Power Allocation
 D_img=diag(abs(D));
 Avg=mean(D_img);
-Ratio=D_img/yk;
+% y0=1/(1+1/(sum(D_img)));
+% yk=y0/K;
+% syms y
+% S=vpasolve(sum(max(0,1./y-1./D_img))==P,y);
+y0=0.8; %Initialize Threshold and iteratively search for power balance
 Power_alloc=zeros(size(D_img));
-for count=1:N
-    if D_img(count)>=yk
-        Power_alloc(count)=Power*(1/y0-1/(D_img(count)*K));
-    else
-        Power_alloc(count)=0;
+while abs(sum(Power_alloc)-Power)>2
+    for count=1:N
+        if D_img(count)>=y0
+            Power_alloc(count)=Power*(1/y0-1/(D_img(count)));
+        else
+            Power_alloc(count)=0;
+        end
     end
+    if sum(Power_alloc)>Power+2
+        y0=y0+0.001;
+    elseif sum(Power_alloc)<Power-2
+        y0=y0-0.001;
+    else
+        y0=y0;
+    end
+    disp(sum(Power_alloc))
 end
 
-sum(Power_alloc)
-bar(D_img)
-hold on;
-plot([0,18],[0.5,0.5])
-figure
-bar(Power_alloc)
+% bar(D_img)
+% hold on;
+% plot([0,16],[y0,y0])
+% figure
+% bar(Power_alloc)
+%% Bits generation 
+Bits=randi(0:1,[1,N*Block_Num*log2(M)]);
+Bits2=zeros(1,length(Bits)/log2(M));
+for i=1:log2(M):length(Bits)
+    Bits2(1+(i-1)/log2(M))=bin2dec(num2str(Bits(i:i+log2(M)-1)));
+end
+if M==4
+    Bits3=qammod(Bits2,M)*sqrt(0.5);
+end
+%% Adaptive Modulation 
+Symbols=reshape(Bits3,N,1,Block_Num);
+Symbols1=Power_alloc.*Symbols;
+
+
+
 
 
 
