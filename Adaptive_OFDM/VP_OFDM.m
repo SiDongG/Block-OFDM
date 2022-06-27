@@ -1,22 +1,23 @@
 %% Variable Power Adaptive Modulation, Waterfilling 
 %% Parameters 
-clear; clc; close all;
-N=16; %Number of Subcarrier
-L=4; %Channel Length
-Block_Num=100; %Block Number
-C=4; %Len Cyclic Prefix 
+function[Ratio_AM,Ratio]=VP_OFDM(N,L,Block_Num,C,SNR)
+% clear; clc; close all;
+% N=16; %Number of Subcarrier
+% L=4; %Channel Length
+% Block_Num=100; %Block Number
+% C=4; %Len Cyclic Prefix 
+% Pb=1e-3;
+% SNR=100;
+% K=-1.5/(log(5*Pb)); %Total fade depth Power Constraint 
+% yk=0.5;y0=yk*K;
 M=4; %4-QAM
 P=N+C;
+N_var=1;
+Power=N_var*SNR;%Average Power Constraint 
+IFFT=zeros(N);
 S=eye(N);
 T=[S(2*N-P+1:N,:);S];
 R=[zeros(N,P-N),eye(N)];
-Pb=1e-3;
-N_var=1;
-SNR=100;
-% K=-1.5/(log(5*Pb)); %Total fade depth Power Constraint 
-% yk=0.5;y0=yk*K;
-Power=N_var*SNR;%Average Power Constraint 
-IFFT=zeros(N);
 for a=1:N
     for b=1:N
         IFFT(a,b)=exp(1i*2*pi*(a-1)*(b-1)/N);
@@ -71,7 +72,7 @@ while abs(sum(Power_alloc)-Power)>2
     else
         y0=y0;
     end
-    disp(sum(Power_alloc))
+%     disp(sum(Power_alloc))
 end
 
 % bar(D_img)
@@ -110,15 +111,40 @@ for count=1:Block_Num
     Symbols3_AM(:,:,count)=G*Symbols2_AM(:,:,count);
     Symbols3(:,:,count)=G*Symbols2(:,:,count);
 end
-%% Demodulation
-Bitsre=zeros(size(Bits));
-Bits_AM=zeros(size(Bits));
-Symbols4_AM=zeros(size(Symbols3_AM));
-Symbols4=zeros(size(Symbols3));
-if M==4
-    Symbols4_AM=qamdemod(Symbols3_AM,M);
-    Symbols4=qamdemod(Symbols3,M);
+% %% Demodulation
+% Bitsre=zeros(size(Bits));
+% Bits_AM=zeros(size(Bits));
+% Symbols4_AM=zeros(size(Symbols3_AM));
+% Symbols4=zeros(size(Symbols3));
+% if M==4
+%     Symbols4_AM=qamdemod(Symbols3_AM,M);
+%     Symbols4=qamdemod(Symbols3,M);
+% end
+%% Error Calculation 
+Num_Error=0;
+for count=1:Block_Num
+    for i=1:N
+        if Symbols1_AM(i,:,count)~=0
+            if qamdemod(Symbols1_AM(i,:,count),4)~=qamdemod(Symbols3_AM(i,:,count),4)
+                Num_Error=Num_Error+1;
+            end
+        end
+    end
 end
+Num_Error2=0;
+for count=1:Block_Num
+    for i=1:N
+        if qamdemod(Symbols(i,:,count),4)~=qamdemod(Symbols3(i,:,count),4)
+            Num_Error2=Num_Error2+1;
+        end
+    end
+end
+Nonz=nnz(Symbols1_AM(:,:,1));
+Ratio_AM=Num_Error/(Nonz*Block_Num);
+Ratio=Num_Error2/(Block_Num*N);
+
+
+
 
 
 
