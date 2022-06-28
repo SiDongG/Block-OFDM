@@ -7,9 +7,10 @@ function[Ratio_AM,Ratio]=VP_OFDM(N,L,Block_Num,C,SNR)
 % Block_Num=100; %Block Number
 % C=4; %Len Cyclic Prefix 
 % Pb=1e-3;
-% SNR=100;
+% SNR=3;
 % K=-1.5/(log(5*Pb)); %Total fade depth Power Constraint 
 % yk=0.5;y0=yk*K;
+
 M=4; %4-QAM
 P=N+C;
 N_var=1;
@@ -50,7 +51,7 @@ end
 D=FFT*R*H0*T*IFFT;
 %% Power Allocation
 D_img=diag(abs(D));
-Avg=mean(D_img);
+% Avg=mean(D_img);
 % y0=1/(1+1/(sum(D_img)));
 % yk=y0/K;
 % syms y
@@ -65,9 +66,9 @@ while abs(sum(Power_alloc)-Power)>2
             Power_alloc(count)=0;
         end
     end
-    if sum(Power_alloc)>Power+2
+    if sum(Power_alloc)>Power+1
         y0=y0+0.001;
-    elseif sum(Power_alloc)<Power-2
+    elseif sum(Power_alloc)<Power-1
         y0=y0-0.001;
     else
         y0=y0;
@@ -90,18 +91,19 @@ end
 if M==4
     Bits3=qammod(Bits2,M)*sqrt(0.5);
 end
-Symbols=reshape(Bits3,N,1,Block_Num);
-Symbols1_AM=Power_alloc.*Symbols;
+Symbols1=reshape(Bits3,N,1,Block_Num);
+Symbols1_AM=Power_alloc.*Symbols1;
+Nonz=nnz(Symbols1_AM(:,:,1));
 %% Channel 
 Symbols2_AM=zeros(size(Symbols1_AM));
-Symbols2=zeros(size(Symbols));
-Symbols=(sum(abs(Symbols1_AM(:,:,1)))/sum(abs(Symbols(:,:,1))))*Symbols;
+Symbols2=zeros(size(Symbols1));
+Symbols1=(N/Nonz)*(sum(abs(Symbols1_AM(:,:,1)))/sum(abs(Symbols1(:,:,1))))*Symbols1;
 nr=randn(N,1,Block_Num);
 ni=randn(N,1,Block_Num);
 Noise=(sqrt(2)/2)*(nr+1i*ni);
 for count=1:Block_Num
     Symbols2_AM(:,:,count)=D*Symbols1_AM(:,:,count)+Noise(:,:,count);
-    Symbols2(:,:,count)=D*Symbols(:,:,count)+Noise(:,:,count);
+    Symbols2(:,:,count)=D*Symbols1(:,:,count)+Noise(:,:,count);
 end
 %% ZF Equalization 
 G=pinv(D);
@@ -134,12 +136,11 @@ end
 Num_Error2=0;
 for count=1:Block_Num
     for i=1:N
-        if qamdemod(Symbols(i,:,count),4)~=qamdemod(Symbols3(i,:,count),4)
+        if qamdemod(Symbols1(i,:,count),4)~=qamdemod(Symbols3(i,:,count),4)
             Num_Error2=Num_Error2+1;
         end
     end
 end
-Nonz=nnz(Symbols1_AM(:,:,1));
 Ratio_AM=Num_Error/(Nonz*Block_Num);
 Ratio=Num_Error2/(Block_Num*N);
 
