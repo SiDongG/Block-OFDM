@@ -1,10 +1,12 @@
 %% Variable Power Variable Rate Adaptive Modulation
-%% Parameters 
-clear; clc; close all;
-N=64; %Number of Subcarrier
-L=4; %Channel Length
-Block_Num=100; %Block Number
-C=4; %Len Cyclic Prefix 
+%% Parameters \
+function [Error_rate_AM,Error_rate]=VPVR_OFDM(N,L,Block_Num,C,SNR)
+% clear; clc; close all;
+% N=64; %Number of Subcarrier
+% L=4; %Channel Length
+% Block_Num=100; %Block Number
+% C=4; %Len Cyclic Prefix 
+% SNR=10;
 P=N+C;
 S=eye(N);
 T=[S(2*N-P+1:N,:);S];
@@ -13,7 +15,7 @@ Pb=1e-4;
 K=-1.5/(log(5*Pb)); % Above Cutoff Fade Level Constraint
 N_var=1;
 M=2; %2QAM for non-adaptive transmission 
-SNR=10;
+
 Power=N_var*SNR;
 Power_avg=Power/N; % Average Power Constraint
 IFFT=zeros(N);
