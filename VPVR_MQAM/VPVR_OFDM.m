@@ -214,3 +214,33 @@ for count=1:Block_Num
 end
 
 %% Error Counting 
+Error_AM=sum(Bitsre_AM~=Bits_AM);
+Error=sum(Bitsre~=Bits);
+Error_rate_AM=Error_AM/length(Bits_AM);
+Error_rate=Error/length(Bits);
+%% Capacity Calculation 
+% C_Nonadaptation=log2(2);
+% C_Adaptation=0;
+% for i=1:N
+%     if QAM_alloc(i)==2
+%         C_Adaptation=C_Adaptation+log2(2)/N;
+%     elseif QAM_alloc(i)==4
+%         C_Adaptation=C_Adaptation+log2(4)/N;
+%     elseif QAM_alloc(i)==16
+%         C_Adaptation=C_Adaptation+log2(16)/N;
+%     elseif QAM_alloc(i)==64
+%         C_Adaptation=C_Adaptation+log2(64)/N;
+%     else
+%         disp('')
+%     end
+% end
+
+
+
+
+
+
+
+
+
+
